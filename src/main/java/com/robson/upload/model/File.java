@@ -1,13 +1,13 @@
 package com.robson.upload.model;
 
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import javax.persistence.*;
+import java.io.Serializable;
 
 @Entity
 @Table(name = "files", schema = "public")
-public class File {
+public class File implements Serializable {
 
     @Id
     @GeneratedValue
@@ -16,10 +16,16 @@ public class File {
     private String originalName;
     private Long byteSize;
 
+    @ManyToOne
+    @JsonIgnore
+    @JoinColumn(name = "document_id")
+    private Document document;
+
     public File() {
     }
 
     public File(String pathFile, String originalName, Long byteSize) {
+        this.id = id;
         this.pathFile = pathFile;
         this.originalName = originalName;
         this.byteSize = byteSize;
@@ -57,6 +63,13 @@ public class File {
         this.byteSize = byteSize;
     }
 
+    public Document getDocument() {
+        return document;
+    }
+
+    public void setDocument(Document document) {
+        this.document = document;
+    }
 }
 
 

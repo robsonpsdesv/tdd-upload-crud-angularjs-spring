@@ -4,7 +4,7 @@ angular
 
     .module('app', ['angularFileUpload'])
 
-    .controller('UploadController', ['$scope', 'FileUploader', function ($scope, FileUploader) {
+    .controller('UploadController', ['$scope', '$http', 'FileUploader', function ($scope, $http, FileUploader) {
 
         var uploader = $scope.uploader = new FileUploader({
             url: "/files"
@@ -67,6 +67,31 @@ angular
         };
 
         console.info('uploader', uploader);
+
+        /*Object info doc*/
+        $scope.document = {
+            id: "-1",
+            name: ""
+        };
+
+        /*Create or Update document with files*/
+        $scope.saveDocument = function () {
+            $http({
+                method: 'POST',
+                url: '/documents',
+                data: $scope.document
+            }).then(function (response) {
+                $scope.document = response.data;
+                var newUrl = "/files2/"+$scope.document.id;
+                if($scope.uploader.queue.length > 0){
+                    $scope.uploader.queue.forEach(function (element) {
+                        element.url = newUrl;
+                    })
+                    $scope.uploader.url = "/files2/"+$scope.document.id;
+                    $scope.uploader.uploadAll();
+                }
+            })
+        }
     }])
     .controller('FileController', function ($scope, $http) {
 

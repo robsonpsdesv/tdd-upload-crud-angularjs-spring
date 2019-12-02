@@ -1,7 +1,9 @@
 package com.robson.upload.controller;
 
+import com.robson.upload.model.Document;
 import com.robson.upload.model.File;
 import com.robson.upload.model.RequestResponse;
+import com.robson.upload.repository.DocumentRepository;
 import com.robson.upload.repository.FileRepository;
 import com.robson.upload.service.FileService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,10 +28,12 @@ public class FileController {
     private FileService fileService;
 
     private final FileRepository fileRepository;
+    private final DocumentRepository documentRepository;
 
     @Autowired
-    public FileController(FileRepository fileRepository) {
+    public FileController(FileRepository fileRepository, DocumentRepository documentRepository) {
         this.fileRepository = fileRepository;
+        this.documentRepository = documentRepository;
     }
 
     @GetMapping("/files")
@@ -74,6 +78,23 @@ public class FileController {
             return ResponseEntity.ok(new RequestResponse(true, "Upload realizado com sucesso!"));
         } else {
             return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(new RequestResponse(false, "Erro ao realizar o upload!"));
+        }
+    }
+
+    @PostMapping("/files2/{documentId}")
+    public ResponseEntity<RequestResponse> upload2(@RequestParam("file")MultipartFile file, @PathVariable Long documentId){
+        Optional<Document> optDoc = documentRepository.findById(documentId);
+        if(optDoc.isPresent()){
+            File fileContent = fileService.saveUpload(file);
+            if (file != null) {
+                fileContent.setDocument(optDoc.get());
+                fileRepository.save(fileContent);
+                return ResponseEntity.ok(new RequestResponse(true, "Upload realizado com sucesso!"));
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_GATEWAY).body(new RequestResponse(false, "Houve um erro ao fazer upload!"));
+            }
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new RequestResponse(false, "Registro de documento não encontrado!"));
         }
     }
 
